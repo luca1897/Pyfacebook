@@ -14,7 +14,19 @@ To use Pyfacebook you must have Python and python-pyside installed.
 ===========================================================================
 3. Examples
 ===========================================================================
+import pyfacebook
+album_id = "album id"
+app_id = "app id"
 
+
+permission = ["publish_stream"]
+
+pyfacebook.init(app_id=app_id,permission=permission)
+
+files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
+print pyfacebook.Album().upload_photo(album_id,files)
+
+for more examples see test.py
 
 ===========================================================================
 4. Connections
