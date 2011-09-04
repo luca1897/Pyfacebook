@@ -1,0 +1,51 @@
+=========================================
+Pyfacebook
+=========================================
+1. Introduction
+PyFbGraph is a Python client library for the Facebook Graph API.
+
+
+===========================================================================
+2. Requirements
+===========================================================================
+
+To use Pyfacebook you must have Python and python-pyside installed.
+
+===========================================================================
+3. Examples
+===========================================================================
+
+
+===========================================================================
+4. Connections
+===========================================================================
+Album 
+Application 
+Checkin 
+Comment 
+Domain 
+Event 
+FriendList 
+Group
+Insights
+Link
+Message
+Note
+Page
+Photo
+Post
+Review
+Status message
+Subscription
+Thread
+User 
+Video
+
+for more info see: https://developers.facebook.com/docs/reference/api/
+
+===========================================================================
+5. License
+===========================================================================
+
+Pyfacebook is released under the GNU GENERAL PUBLIC LICENSE
+for further information read COPYING
