@@ -22,17 +22,21 @@ import simplejson
 
 GRAPH_URL = "https://graph.facebook.com/"
 access_token = ""
+
+def diff_list(a,b):	
+	return list(set(b) - set(a))
+
+
 def set_access_token(arg):
 	global access_token
 	access_token = arg
 	
-def diff_list(a,b):	
-	return list(set(b) - set(a))
 	
 def get_access_token():
 	if access_token=="":
 		raise FbError("Invalid access token")
 	return str(access_token)
+
 
 def init(**args):
 	if "access_token" in args:
@@ -47,10 +51,13 @@ def init(**args):
 		else:
 			permission = ""
 		set_access_token(AccessToken(id_app,permission))
+	
 		
 class FbError(Exception):
+	
 	def raise_error(self, message):
 		Exception.__init__(self, message)
+	
 	
 class Request(object):
 				
@@ -73,6 +80,7 @@ class Request(object):
 
 
 class PutFile(Request):
+	
 	def putFile(self,url,body):
 		request = urllib2.Request(url)
 		request.add_header('Content-type', 'multipart/form-data; boundary=%s'% ('PyFbGraph'))
@@ -80,25 +88,33 @@ class PutFile(Request):
 		request.add_data(body)		
 		return self.request(request)
 
+
 class PutObject(Request):	
+	
 	def put_object(self,**args):
 		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], get_access_token())
 		request = urllib2.Request(url)
 		return self.request(request,args["post"])
 	
+	
 class GetObject(Request):	
+	
 	def get_object(self,url):
 		request = urllib2.Request(url)
 		return self.request(request)	
 
+
 class DelObject(Request):	
+	
 	def del_object(self,**args):
 		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], get_access_token())
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
 
+
 class UploadPhoto(PutFile):
+	
 	def upload_photo(self,id,photos):
 		import mimetypes
 		url = GRAPH_URL + id + "/photos?access_token=" + get_access_token()
@@ -133,18 +149,25 @@ class UploadPhoto(PutFile):
 
 
 class Comment(PutObject):
+	
 	def comment(self,id,message):
 		return self.put_object(id = id, comp ="comments" , post ={"message":message})
 	
+	
 class Likes(PutObject,DelObject):
+	
 	def like(self,id):
 		return self.put_object(id = id, comp ="likes" , post ="")	
+	
 	
 	def unlike(self,id):
 		return self.del_object(id = id, comp ="likes")	
 	
+	
 class Connections(GetObject):
+	
 	CONN = []
+	
 	def connection(self,id,connection):
 		if connection in self.CONN:
 			url = GRAPH_URL + id + "/" + connection + "&access_token=" + get_access_token()
@@ -152,14 +175,18 @@ class Connections(GetObject):
 		else:
 			return "Unknown connection: %s " % (connection) 
 	
+	
 	def connections(self,args):
 		data = []
 		for a in args:
 			data.append(self.connection(a["id"],a["connection"]))
 		return data
 	
+	
 class Object(GetObject):
+	
 	FIELDS = []
+	
 	def object(self,id,**args):	
 		get = []
 		if "fields" in args:
@@ -175,9 +202,11 @@ class Object(GetObject):
 
 	
 class Album(UploadPhoto,Object,Connections,Comment,Likes):	
+	
 	CONN = ["photos","likes","comments","picture"]	
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
 			"privacy","count","type","created_time","updated_time"]
+	
 	
 class AccessToken(FbError):
 
@@ -193,6 +222,7 @@ class AccessToken(FbError):
 		self.get_access_token()
 		if self.access_token=="":
 			raise self.raise_error("Access Token is not valid") 	
+			
 			
 	def get_access_token(self):
 		try: 
@@ -210,12 +240,14 @@ class AccessToken(FbError):
 		self.web.show()
 		self.app.exec_()
 
+
 	def loadfinished(self):
 		url = self.web.url().toString()
 		if url.find("https://www.facebook.com/connect/login_success.html#access_token=")>=0:
 			self.access_token = url[url.find("=")+1:url.find("&expires_in")]
 			self.web.close()
 			self.app.exit()
+			
 			
 	def __str__(self):
 		return self.access_token	
