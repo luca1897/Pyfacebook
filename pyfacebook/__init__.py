@@ -72,6 +72,7 @@ class Request(object):
 		except ValueError:
 			return res
 
+
 class PutFile(Request):
 	def putFile(self,url,body):
 		request = urllib2.Request(url)
@@ -81,9 +82,10 @@ class PutFile(Request):
 		return self.request(request)
 
 class PutObject(Request):	
-	def put_object(self,url,post=""):
+	def put_object(self,**args):
+		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], get_access_token())
 		request = urllib2.Request(url)
-		return self.request(request,post)
+		return self.request(request,args["post"])
 	
 class GetObject(Request):	
 	def get_object(self,url):
@@ -91,7 +93,8 @@ class GetObject(Request):
 		return self.request(request)	
 
 class DelObject(Request):	
-	def del_Object(self,url):
+	def del_object(self,**args):
+		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], get_access_token())
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
@@ -130,6 +133,17 @@ class UploadPhoto(PutFile):
 		return ret
 
 
+class Comment(PutObject):
+	def comment(self,id,message):
+		return self.put_object(id = id, comp ="comments" , post ={"message":message})
+	
+class Likes(PutObject,DelObject):
+	def like(self,id):
+		return self.put_object(id = id, comp ="likes" , post ="")	
+	
+	def unlike(self,id):
+		return self.del_object(id = id, comp ="likes")	
+	
 class Connections(GetObject):
 	CONN = []
 	def connection(self,id,connection):
@@ -163,7 +177,7 @@ class Object(GetObject):
 		return self.get_object(url)
 
 	
-class Album(UploadPhoto,Object,Connections):	
+class Album(UploadPhoto,Object,Connections,Comment,Likes):	
 	CONN = ["photos","likes","comments","picture"]	
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
 			"privacy","count","type","created_time","updated_time"]

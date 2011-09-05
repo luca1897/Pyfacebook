@@ -25,3 +25,10 @@ f.close()
 #Add photos to an album
 files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
 print pyfacebook.Album().upload_photo(album_id,files)
+
+#Add comment to an album
+print pyfacebook.Album().comment(album_id,"test")
+#like an Album
+print pyfacebook.Album().like(album_id)
+#unlike an Album
+print pyfacebook.Album().unlike(album_id)
