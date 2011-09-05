@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+import sys 
 import urllib2,urllib
 import simplejson
 
@@ -26,6 +26,9 @@ access_token = ""
 def set_access_token(arg):
 	global access_token
 	access_token = arg
+	
+def diff_list(a,b):	
+	return list(set(b) - set(a))
 	
 def get_access_token():
 	if access_token=="":
@@ -83,12 +86,12 @@ class PutObject(Request):
 		return self.request(request,post)
 	
 class GetObject(Request):	
-	def put_object(self,url):
+	def get_object(self,url):
 		request = urllib2.Request(url)
 		return self.request(request)	
 
 class DelObject(Request):	
-	def delObject(self,url):
+	def del_Object(self,url):
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
@@ -126,8 +129,44 @@ class UploadPhoto(PutFile):
 		
 		return ret
 
-class Album(UploadPhoto):	
-	pass	
+
+class Connections(GetObject):
+	CONN = []
+	def connection(self,id,connection):
+		if connection in self.CONN:
+			url = GRAPH_URL + id + "/" + connection + "&access_token=" + get_access_token()
+			print url
+			return self.get_object(url)
+		else:
+			return "Unknown connection: %s " % (connection) 
+	
+	def connections(self,args):
+		data = []
+		for a in args:
+			data.append(self.connection(a["id"],a["connection"]))
+		return data
+	
+class Object(GetObject):
+	FIELDS = []
+	def object(self,id,**args):	
+		get = []
+		if "fields" in args:
+			d = diff_list(self.FIELDS,args["fields"])
+			if d:
+				return "Unknown(s) field(s): %s" % (",".join(d))
+			get.append("?fields=%s" % (",".join(args["fields"])))
+			
+		get.append("&access_token=" + get_access_token())
+		url = GRAPH_URL + id + "/" + "".join(get)
+		print url
+		
+		return self.get_object(url)
+
+	
+class Album(UploadPhoto,Object,Connections):	
+	CONN = ["photos","likes","comments","picture"]	
+	FIELDS = ["id","from","name","description","location","link","cover_photo",
+			"privacy","count","type","created_time","updated_time"]
 	
 class AccessToken(FbError):
 
