@@ -100,6 +100,7 @@ class PutObject(Request):
 class GetObject(Request):	
 	
 	def get_object(self,url):
+		print url
 		request = urllib2.Request(url)
 		return self.request(request)	
 
@@ -168,9 +169,17 @@ class Connections(GetObject):
 	
 	CONN = []
 	
-	def connection(self,id,connection):
+	def connection(self,id,connection,access_token="",**args):
+		get = []
+		if access_token == "":
+			access_token = get_access_token()
+		
 		if connection in self.CONN:
-			url = GRAPH_URL + id + "/" + connection + "&access_token=" + get_access_token()
+			
+			for a in args.keys():
+				get.append("%s=%s" % (a,args[a]))
+			get.append("access_token=%s" % (access_token))
+			url = "%s%s/%s?%s" % (GRAPH_URL, id ,connection ,"&".join(get))
 			return self.get_object(url)
 		else:
 			return "Unknown connection: %s " % (connection) 
@@ -179,7 +188,9 @@ class Connections(GetObject):
 	def connections(self,args):
 		data = []
 		for a in args:
-			data.append(self.connection(a["id"],a["connection"]))
+			if "access_token" not in a:
+				access_token=""
+			data.append(self.connection(a["id"],a["connection"],access_token))
 		return data
 	
 	
@@ -187,27 +198,38 @@ class Object(GetObject):
 	
 	FIELDS = []
 	
-	def object(self,id,**args):	
+	def object(self,id,access_token="",**args):	
+		
 		get = []
+		if access_token == "":
+			access_token = get_access_token()
+			
 		if "fields" in args:
 			d = diff_list(self.FIELDS,args["fields"])
 			if d:
 				return "Unknown(s) field(s): %s" % (",".join(d))
-			get.append("?fields=%s" % (",".join(args["fields"])))
+			get.append("fields=%s" % (",".join(args["fields"])))
 			
-		get.append("&access_token=" + get_access_token())
-		url = GRAPH_URL + id + "/" + "".join(get)
+		get.append("access_token=" + access_token)
+		url = "%s%s/?%s" % (GRAPH_URL,id,"&".join(get))
 		
 		return self.get_object(url)
 
-	
+"""FACEBOOK GRAPH OBJECTS"""	
 class Album(UploadPhoto,Object,Connections,Comment,Likes):	
 	
 	CONN = ["photos","likes","comments","picture"]	
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
 			"privacy","count","type","created_time","updated_time"]
 	
+class Application(Object,Connections):	
 	
+	CONN = ["accounts","albums","feed","insights","links","picture","posts",
+			"reviews","staticresources","statuses","subscriptions","tagged","translations",
+			"scores","achievements"]	
+	FIELDS = ["id","name","description","category","subcategory","link"]
+	
+		
 class AccessToken(FbError):
 
 	def __init__(self,idapp,permission=None): 

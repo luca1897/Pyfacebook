@@ -34,3 +34,8 @@ print pyfacebook.Album().comment(album_id,"test")
 print pyfacebook.Album().like(album_id)
 #unlike an Album
 print pyfacebook.Album().unlike(album_id)
+
+print pyfacebook.Application().connection("2439131959","albums")
+print pyfacebook.Application().connection("2439131959","albums",limit=25,until=1247270845)
+# =
+print pyfacebook.GetObject().get_object("https://graph.facebook.com/2439131959/albums?access_token={ACCESSTOKEN}&limit=25&until=1247270845")
