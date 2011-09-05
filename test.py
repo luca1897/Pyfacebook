@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import pyfacebook
 try:
 	from pyfacebook.common import *

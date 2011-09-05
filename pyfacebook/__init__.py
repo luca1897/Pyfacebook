@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # __init__.py
 # Copyright (C) orion 2011 <luca.barbara@live.com>
@@ -149,7 +148,6 @@ class Connections(GetObject):
 	def connection(self,id,connection):
 		if connection in self.CONN:
 			url = GRAPH_URL + id + "/" + connection + "&access_token=" + get_access_token()
-			print url
 			return self.get_object(url)
 		else:
 			return "Unknown connection: %s " % (connection) 
@@ -172,7 +170,6 @@ class Object(GetObject):
 			
 		get.append("&access_token=" + get_access_token())
 		url = GRAPH_URL + id + "/" + "".join(get)
-		print url
 		
 		return self.get_object(url)
 
