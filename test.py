@@ -6,6 +6,7 @@ try:
 except ImportError: 
 	album_id = ""
 	app_id = ""
+	app_secret = ""
 
 permission = ["read_mailbox","user_photos","publish_stream","user_checkins","friends_checkins","publish_checkins","rsvp_event","read_stream","read_friendlists","manage_friendlists","user_groups","friends_groups","offline_access"]
 
@@ -35,7 +36,15 @@ print pyfacebook.Album().like(album_id)
 #unlike an Album
 print pyfacebook.Album().unlike(album_id)
 
+#The photo albums this page has created
 print pyfacebook.Application().connection("2439131959","albums")
 print pyfacebook.Application().connection("2439131959","albums",limit=25,until=1247270845)
 # =
 print pyfacebook.GetObject().get_object("https://graph.facebook.com/2439131959/albums?access_token={ACCESSTOKEN}&limit=25&until=1247270845")
+
+client_access_token = pyfacebook.get_client_access_token(app_id, app_secret)
+print client_access_token
+#Create a test account for an application
+print pyfacebook.Application().create_account(app_id, client_access_token, parameter={"name":"lolasd","installed":True})
+#Delete a test account for an application
+print pyfacebook.Application().delete_account("id test user",client_access_token)

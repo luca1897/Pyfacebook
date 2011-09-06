@@ -22,11 +22,23 @@ import simplejson
 
 GRAPH_URL = "https://graph.facebook.com/"
 access_token = ""
+client_access_token = None
 
 def diff_list(a,b):	
 	return list(set(b) - set(a))
 
-
+def set_client_access_token(arg):
+	global client_access_token
+	client_access_token = arg
+	
+def get_client_access_token(client_id=None,client_secret=None):
+	global client_access_token
+	if not client_access_token:
+		url = "%soauth/access_token?client_id=%s&client_secret=%s&grant_type=client_credentials" % (GRAPH_URL,client_id,client_secret)
+		request = urllib2.Request(url)
+		set_client_access_token(Request().request(request).split("=")[1])
+	return client_access_token
+	
 def set_access_token(arg):
 	global access_token
 	access_token = arg
@@ -41,6 +53,7 @@ def get_access_token():
 def init(**args):
 	if "access_token" in args:
 		set_access_token(args["access_token"])
+		
 	else:
 		if "id_app" in args:
 			id_app = args["id_app"]
@@ -92,7 +105,8 @@ class PutFile(Request):
 class PutObject(Request):	
 	
 	def put_object(self,**args):
-		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], get_access_token())
+		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], args["access_token"] if "access_token"  in args else get_access_token())
+		print url
 		request = urllib2.Request(url)
 		return self.request(request,args["post"])
 	
@@ -108,11 +122,19 @@ class GetObject(Request):
 class DelObject(Request):	
 	
 	def del_object(self,**args):
-		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], get_access_token())
+		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, args["id"], args["comp"], args["access_token"] if "access_token"  in args else get_access_token())
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
 
+
+class Account(PutObject,DelObject):
+	
+	def create_account(self,id,client_access_token,parameter=None):
+		return self.put_object(id = id, comp ="accounts/test-users" , post =parameter,access_token=access_token)
+		
+	def delete_account(self,id,client_access_token):
+		return self.del_object(id = id, comp ="",access_token=client_access_token)
 
 class UploadPhoto(PutFile):
 	
@@ -149,6 +171,7 @@ class UploadPhoto(PutFile):
 		return ret
 
 
+			
 class Comment(PutObject):
 	
 	def comment(self,id,message):
@@ -169,16 +192,14 @@ class Connections(GetObject):
 	
 	CONN = []
 	
-	def connection(self,id,connection,access_token="",**args):
+	def connection(self,id,connection,**args):
 		get = []
-		if access_token == "":
-			access_token = get_access_token()
 		
 		if connection in self.CONN:
 			
 			for a in args.keys():
 				get.append("%s=%s" % (a,args[a]))
-			get.append("access_token=%s" % (access_token))
+			get.append("access_token=%s" % (args["access_token"] if "access_token"  in args else get_access_token()))
 			url = "%s%s/%s?%s" % (GRAPH_URL, id ,connection ,"&".join(get))
 			return self.get_object(url)
 		else:
@@ -198,7 +219,7 @@ class Object(GetObject):
 	
 	FIELDS = []
 	
-	def object(self,id,access_token="",**args):	
+	def object(self,id,**args):	
 		
 		get = []
 		if access_token == "":
@@ -210,10 +231,13 @@ class Object(GetObject):
 				return "Unknown(s) field(s): %s" % (",".join(d))
 			get.append("fields=%s" % (",".join(args["fields"])))
 			
-		get.append("access_token=" + access_token)
+		get.append("access_token=%s" % (args["access_token"] if "access_token"  in args else get_access_token()))
 		url = "%s%s/?%s" % (GRAPH_URL,id,"&".join(get))
 		
 		return self.get_object(url)
+
+
+
 
 """FACEBOOK GRAPH OBJECTS"""	
 class Album(UploadPhoto,Object,Connections,Comment,Likes):	
@@ -222,12 +246,14 @@ class Album(UploadPhoto,Object,Connections,Comment,Likes):
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
 			"privacy","count","type","created_time","updated_time"]
 	
-class Application(Object,Connections):	
+class Application(Object,Connections,Account):	
 	
 	CONN = ["accounts","albums","feed","insights","links","picture","posts",
 			"reviews","staticresources","statuses","subscriptions","tagged","translations",
 			"scores","achievements"]	
 	FIELDS = ["id","name","description","category","subcategory","link"]
+	
+	
 	
 		
 class AccessToken(FbError):
