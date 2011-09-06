@@ -13,7 +13,6 @@ permission = ["read_mailbox","user_photos","publish_stream","user_checkins","fri
 #init library
 pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
 
-
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
@@ -27,16 +26,13 @@ print pyfacebook.Album(album_id).object(fields=["from","name"])
 #The photos contained in this album
 print pyfacebook.Album(album_id,access_token).connection("photos")
 
-
 #The album's cover photo
 f = open("test.jpg","w")
 f.write(pyfacebook.Connection(album_id,access_token).connection("picture"))
 f.close()
 
 
-#Add photos to an album
-files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
-print pyfacebook.Album(album_id).upload_photo(files)
+
 
 
 #Add comment to an album
@@ -58,3 +54,8 @@ print pyfacebook.GetObject().get_object("https://graph.facebook.com/2439131959/a
 print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).create_account(parameter={"name":"lolasd","installed":True})
 #Delete a test account for an application
 print pyfacebook.Application("test user id",pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
+
+
+#Add photos to an album
+files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
+print pyfacebook.Album(album_id).upload_photo(files)

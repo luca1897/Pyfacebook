@@ -60,23 +60,8 @@ def set_generic_access_token(access_token):
 			
 def get_generic_access_token():
 	return str(generic_access_token)	
-
-class OBJECT_INIT(object):	
-	def __init__(self,id,specific_access_token=None):
-		self.set_specific_access_token(specific_access_token)
-		self.id=id
-		
-	def set_specific_access_token(self,access_token):
-		self.specific_access_token = access_token 
-			
-	def get_specific_access_token(self):
-		return str(self.specific_access_token)	
 	
-	def set_id(self,id):
-		self.id = id	
-		
-		
-class METHOD_INIT(object):
+class PyFacebook(object):
 	def __init__(self,id,specific_access_token=None):
 		self.set_specific_access_token(specific_access_token)
 		self.id=id
@@ -155,12 +140,12 @@ class DelObject(Request):
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
 
-class Feed(METHOD_INIT,PutObject):
+class Feed(PyFacebook,PutObject):
 	#create a link, post or status message
 	def create_post(self,parameter):
 		return self.put_object(comp ="feed" , post =parameter)
 	
-class Account(METHOD_INIT,PutObject,DelObject):
+class Account(PyFacebook,PutObject,DelObject):
 	
 	def create_account(self,parameter=None):
 		return self.put_object( comp ="accounts/test-users" , post =parameter)
@@ -169,12 +154,12 @@ class Account(METHOD_INIT,PutObject,DelObject):
 		return self.del_object( comp ="")
 
 			
-class Comment(METHOD_INIT,PutObject):
+class Comment(PyFacebook,PutObject):
 	def comment(self,message):
 		return self.put_object( comp ="comments" , post ={"message":message})
 	
 	
-class Likes(METHOD_INIT,PutObject,DelObject):
+class Likes(PyFacebook,PutObject,DelObject):
 	
 	def like(self):
 		return self.put_object(comp ="likes" , post ="")	
@@ -184,7 +169,7 @@ class Likes(METHOD_INIT,PutObject,DelObject):
 		return self.del_object(comp ="likes")	
 	
 	
-class UploadPhoto(PutFile):
+class UploadPhoto(PyFacebook,PutFile):
 	
 	def upload_photo(self,photos):
 		import mimetypes
@@ -217,7 +202,7 @@ class UploadPhoto(PutFile):
 		
 		return ret	
 	
-class Connection(METHOD_INIT,GetObject):
+class Connection(PyFacebook,GetObject):
 	
 	CONN = []
 	
@@ -235,7 +220,7 @@ class Connection(METHOD_INIT,GetObject):
 			return "Unknown connection: %s " % (connection) 
 	
 	
-class Object(METHOD_INIT,GetObject):
+class Object(PyFacebook,GetObject):
 	
 	FIELDS = []
 	
@@ -258,20 +243,20 @@ class Object(METHOD_INIT,GetObject):
 
 
 """FACEBOOK GRAPH OBJECTS"""	
-class Album(OBJECT_INIT,UploadPhoto,Object,Connection,Comment,Likes):	
+class Album(Object,Connection,UploadPhoto,Comment,Likes):	
 	
 	CONN = ["photos","likes","comments","picture"]	
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
 			"privacy","count","type","created_time","updated_time"]
 	
-class Application(OBJECT_INIT,Object,Connection,Account):	
+class Application(Object,Connection,Account):	
 	
 	CONN = ["accounts","albums","feed","insights","links","picture","posts",
 			"reviews","staticresources","statuses","subscriptions","tagged","translations",
 			"scores","achievements"]	
 	FIELDS = ["id","name","description","category","subcategory","link"]
 	
-class User(OBJECT_INIT,Object,Connection,Feed):
+class User(Object,Connection,Feed):
 	pass
 		
 class AccessToken(FbError):
