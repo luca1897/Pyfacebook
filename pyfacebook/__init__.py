@@ -103,7 +103,7 @@ class Request(object):
 
 class PostFileRequest(Request):
 	
-	def PostFileRequest(self,**args):
+	def post_file_request(self,**args):
 		url = "%s%s/photos/?access_token=%s" % (GRAPH_URL,self.id,self.specific_access_token if self.specific_access_token else generic_access_token)
 		
 		request = urllib2.Request(url)
@@ -238,7 +238,7 @@ class UploadPhoto(PyFacebook,PostFileRequest):
 			body.append('--PyFbGraph--')
 			body.append('')
 
-			ret.append(self.PostFileRequest(body='\r\n'.join(body)))
+			ret.append(self.post_file_request(body='\r\n'.join(body)))
 		
 		return ret	
 	
