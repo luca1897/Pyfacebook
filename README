@@ -24,15 +24,15 @@ permission = ["publish_stream"]
 pyfacebook.init(app_id=app_id,permission=permission)
 
 files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
-print pyfacebook.Album().upload_photo(album_id,files)
+print pyfacebook.Album(album_id).upload_photo(files)
 
 for more examples see test.py
 
 ===========================================================================
 4. Connections
 ===========================================================================
-Album 
-Application 
+Album ✔
+Application ✔
 Checkin 
 Comment 
 Domain 
@@ -50,7 +50,7 @@ Review
 Status message
 Subscription
 Thread
-User 
+User ✓
 Video
 
 for more info see: https://developers.facebook.com/docs/reference/api/

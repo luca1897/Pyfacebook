@@ -13,6 +13,8 @@ permission = ["read_mailbox","user_photos","publish_stream","user_checkins","fri
 #init library
 pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
 
+
+#Post 4 link 
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
@@ -22,40 +24,48 @@ print pyfacebook.User("me").object()
 print pyfacebook.Object("me").object()
 
 #print the profile that created this album and the title of the album 
+print "print the profile that created this album and the title of the album "
 print pyfacebook.Album(album_id).object(fields=["from","name"])
 #The photos contained in this album
+print "The photos contained in this album"
 print pyfacebook.Album(album_id,access_token).connection("photos")
 
 #The album's cover photo
+print "The album's cover photo"
 f = open("test.jpg","w")
 f.write(pyfacebook.Connection(album_id,access_token).connection("picture"))
 f.close()
 
 
-
-
-
 #Add comment to an album
+print "Add comment to an album"
 ret = pyfacebook.Album(album_id).comment('test')
 print ret
 #like a comment
-print pyfacebook.Likes(ret['id']).like()
+print "like a comment"
+print pyfacebook.Like(ret['id']).like()
 #unlike an Album
+print "unlike an Album"
 print pyfacebook.Album(album_id).unlike()
 
 #The photo albums this page has created
+print "The photo albums this page has created"
 print pyfacebook.Application("2439131959").connection("albums")
 print pyfacebook.Application("2439131959").connection("albums",limit=25,until=1247270845)
 # =
-print pyfacebook.GetObject().get_object("https://graph.facebook.com/2439131959/albums?access_token=%s&limit=25&until=1247270845" % (access_token))
+print pyfacebook.GetRequest().get_request("https://graph.facebook.com/2439131959/albums?access_token=%s&limit=25&until=1247270845" % (access_token))
 
 
 #Create a test account for an application
-print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).create_account(parameter={"name":"lolasd","installed":True})
+print "Create a test account for an application"
+test_user = pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).create_account(parameter={"name":"lolasd","installed":True})
+print test_user
 #Delete a test account for an application
-print pyfacebook.Application("test user id",pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
+print "Delete a test account for an application"
+print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
 
 
 #Add photos to an album
+print "Add photos to an album"
 files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
 print pyfacebook.Album(album_id).upload_photo(files)

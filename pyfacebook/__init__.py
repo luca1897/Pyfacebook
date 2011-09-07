@@ -101,11 +101,10 @@ class Request(object):
 			return res
 
 
-class PutFile(Request):
+class PostFileRequest(Request):
 	
-	def putFile(self,**args):
+	def PostFileRequest(self,**args):
 		url = "%s%s/photos/?access_token=%s" % (GRAPH_URL,self.id,self.specific_access_token if self.specific_access_token else generic_access_token)
-		print url
 		
 		request = urllib2.Request(url)
 		request.add_header('Content-type', 'multipart/form-data; boundary=%s'% ('PyFbGraph'))
@@ -114,62 +113,103 @@ class PutFile(Request):
 		return self.request(request)
 
 
-class PutObject(Request):	
+class PostRequest(Request):	
 	
-	def put_object(self,**args):
+	def post_request(self,**args):
 		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, self.id, args["comp"], self.specific_access_token if self.specific_access_token else generic_access_token)
-		print url
 		request = urllib2.Request(url)
 		return self.request(request,args["post"])
 	
 	
-class GetObject(Request):	
+class GetRequest(Request):	
 	
-	def get_object(self,url):
-		print url
+	def get_request(self,url):
 		request = urllib2.Request(url)
 		return self.request(request)	
 
 
-class DelObject(Request):	
+class DelRequest(Request):	
 	
-	def del_object(self,**args):
-		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, self.id, args["comp"], self.specific_access_token if self.specific_access_token else generic_access_token)
-		print url
+	def del_request(self,**args):
+		
+		get = []
+		if "param" in args:
+			for p in args["param"]:
+				get.append("%s=%s" % (p,args["param"][p]))		
+		
+		url = "%s%s/%s?access_token=%s%s" % (GRAPH_URL, self.id, args["comp"], self.specific_access_token if self.specific_access_token else generic_access_token,"&".join(get))
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
 
-class Feed(PyFacebook,PutObject):
+class Feed(PyFacebook,PostRequest):
 	#create a link, post or status message
 	def create_post(self,parameter):
-		return self.put_object(comp ="feed" , post =parameter)
+		return self.post_request(comp ="feed" , post =parameter)
 	
-class Account(PyFacebook,PutObject,DelObject):
+class Account(PyFacebook,PostRequest,DelRequest):
 	
 	def create_account(self,parameter=None):
-		return self.put_object( comp ="accounts/test-users" , post =parameter)
+		return self.post_request( comp ="accounts/test-users" , post =parameter)
 		
 	def delete_account(self):
-		return self.del_object( comp ="")
+		return self.del_request( comp ="")
 
 			
-class Comment(PyFacebook,PutObject):
+class Comment(PyFacebook,PostRequest):
+	
 	def comment(self,message):
-		return self.put_object( comp ="comments" , post ={"message":message})
+		return self.post_request( comp ="comments" , post ={"message":message})
 	
 	
-class Likes(PyFacebook,PutObject,DelObject):
+class Like(PyFacebook,PostRequest,DelRequest):
 	
 	def like(self):
-		return self.put_object(comp ="likes" , post ="")	
+		return self.post_request(comp ="likes" , post ="")	
 	
 	
 	def unlike(self):
-		return self.del_object(comp ="likes")	
+		return self.del_request(comp ="likes")	
 	
 	
-class UploadPhoto(PyFacebook,PutFile):
+class Subscription(PyFacebook,PostRequest,DelRequest):	
+	
+	def create_subscription(self,parameter):
+		return self.post_request( comp ="subscriptions" , post =parameter)
+		
+	def delete_subscription(self,parameter=None): # parameter = {"object","user|permission|page"} If no object is specified all subscriptions are deleted.
+		return self.del_request( comp ="subscriptions", param =parameter)
+	
+class Translations(PyFacebook,PostRequest,DelRequest):	
+	
+	def create_translation(self,parameter):
+		return self.post_request( comp ="translations" , post =parameter)
+
+	def delete_translation(self,parameter):  # parameter = {"native_hashes",An array of native hashes.}
+		return self.del_request( comp ="translations" , param =parameter)
+
+class Scores(PyFacebook,PostRequest,DelRequest):	
+	
+	def read_scores(self,parameter):
+		url = "%s%s/scores?access_token=%s" % (GRAPH_URL, self.id ,self.specific_access_token) #app access token
+		return self.get_request(url)		
+
+	def delete_scores(self): # parameter = {"achievement","The unique URL to the achievement."}
+		return self.del_request( comp ="scores")
+		
+class Achievements(PyFacebook,PostRequest,DelRequest):	
+	
+	def create_achievement(self,parameter): #parameter {"achievement":Unique URL to the achievement}
+		return self.post_request( comp ="achievements" , post =parameter)		
+	
+	def read_achievements(self,parameter):
+		url = "%s%s/achievements?access_token=%s" % (GRAPH_URL, self.id ,self.specific_access_token) #app access token
+		return self.get_request(url)		
+
+	def delete_scores(self,parameter): # parameter = {"achievement","The unique URL to the achievement."}
+		return self.del_request( comp ="achievements" , param =parameter)		
+		
+class UploadPhoto(PyFacebook,PostFileRequest):
 	
 	def upload_photo(self,photos):
 		import mimetypes
@@ -198,11 +238,11 @@ class UploadPhoto(PyFacebook,PutFile):
 			body.append('--PyFbGraph--')
 			body.append('')
 
-			ret.append(self.putFile(body='\r\n'.join(body)))
+			ret.append(self.PostFileRequest(body='\r\n'.join(body)))
 		
 		return ret	
 	
-class Connection(PyFacebook,GetObject):
+class Connection(PyFacebook,GetRequest):
 	
 	CONN = []
 	
@@ -215,12 +255,12 @@ class Connection(PyFacebook,GetObject):
 				get.append("%s=%s" % (a,args[a]))
 			get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token))
 			url = "%s%s/%s?%s" % (GRAPH_URL, self.id ,connection ,"&".join(get))
-			return self.get_object(url)
+			return self.get_request(url)
 		else:
 			return "Unknown connection: %s " % (connection) 
 	
 	
-class Object(PyFacebook,GetObject):
+class Object(PyFacebook,GetRequest):
 	
 	FIELDS = []
 	
@@ -237,13 +277,13 @@ class Object(PyFacebook,GetObject):
 		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token))
 		url = "%s%s/?%s" % (GRAPH_URL,self.id,"&".join(get))
 		
-		return self.get_object(url)
+		return self.get_request(url)
 
 
 
 
 """FACEBOOK GRAPH OBJECTS"""	
-class Album(Object,Connection,UploadPhoto,Comment,Likes):	
+class Album(Object,Connection,UploadPhoto,Comment,Like):	
 	
 	CONN = ["photos","likes","comments","picture"]	
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
