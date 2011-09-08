@@ -13,7 +13,6 @@ permission = ["read_mailbox","user_photos","publish_stream","user_checkins","fri
 #init library
 pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
 
-
 #Post 4 link 
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
@@ -43,7 +42,7 @@ ret = pyfacebook.Album(album_id).comment('test')
 print ret
 #like a comment
 print "like a comment"
-print pyfacebook.Like(ret['id']).like()
+print pyfacebook.Likes(ret['id']).like()
 #unlike an Album
 print "unlike an Album"
 print pyfacebook.Album(album_id).unlike()
@@ -60,10 +59,14 @@ print pyfacebook.GetRequest().get_request("https://graph.facebook.com/2439131959
 print "Create a test account for an application"
 test_user = pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).create_account(parameter={"name":"lolasd","installed":True})
 print test_user
+
+#Ban a user
+print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).ban_user(test_user["id"])
+#Get  a list of banned users
+print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).get_list()
 #Delete a test account for an application
 print "Delete a test account for an application"
 print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
-
 
 #Add photos to an album
 print "Add photos to an album"

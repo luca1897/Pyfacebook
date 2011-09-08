@@ -116,7 +116,16 @@ class PostFileRequest(Request):
 class PostRequest(Request):	
 	
 	def post_request(self,**args):
-		url = "%s%s/%s?access_token=%s" % (GRAPH_URL, self.id, args["comp"], self.specific_access_token if self.specific_access_token else generic_access_token)
+		
+		get = []
+		if "get" in args:
+			for i in args["get"]:
+				get.append("%s=%s" % (i,args["get"][i]))
+				
+		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token)) 		
+			
+		
+		url = "%s%s/%s?%s" % (GRAPH_URL, self.id, args["comp"], "&".join(get))
 		request = urllib2.Request(url)
 		return self.request(request,args["post"])
 	
@@ -137,7 +146,9 @@ class DelRequest(Request):
 			for p in args["param"]:
 				get.append("%s=%s" % (p,args["param"][p]))		
 		
-		url = "%s%s/%s?access_token=%s%s" % (GRAPH_URL, self.id, args["comp"], self.specific_access_token if self.specific_access_token else generic_access_token,"&".join(get))
+		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token)) 
+		
+		url = "%s%s/%s?%s" % (GRAPH_URL, self.id, args["comp"],"&".join(get))
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
@@ -147,7 +158,7 @@ class Feed(PyFacebook,PostRequest):
 	def create_post(self,parameter):
 		return self.post_request(comp ="feed" , post =parameter)
 	
-class Account(PyFacebook,PostRequest,DelRequest):
+class Accounts(PyFacebook,PostRequest,DelRequest):
 	
 	def create_account(self,parameter=None):
 		return self.post_request( comp ="accounts/test-users" , post =parameter)
@@ -156,23 +167,22 @@ class Account(PyFacebook,PostRequest,DelRequest):
 		return self.del_request( comp ="")
 
 			
-class Comment(PyFacebook,PostRequest):
+class Comments(PyFacebook,PostRequest):
 	
 	def comment(self,message):
 		return self.post_request( comp ="comments" , post ={"message":message})
 	
 	
-class Like(PyFacebook,PostRequest,DelRequest):
+class Likes(PyFacebook,PostRequest,DelRequest):
 	
 	def like(self):
 		return self.post_request(comp ="likes" , post ="")	
-	
 	
 	def unlike(self):
 		return self.del_request(comp ="likes")	
 	
 	
-class Subscription(PyFacebook,PostRequest,DelRequest):	
+class Subscriptions(PyFacebook,PostRequest,DelRequest):	
 	
 	def create_subscription(self,parameter):
 		return self.post_request( comp ="subscriptions" , post =parameter)
@@ -202,13 +212,27 @@ class Achievements(PyFacebook,PostRequest,DelRequest):
 	def create_achievement(self,parameter): #parameter {"achievement":Unique URL to the achievement}
 		return self.post_request( comp ="achievements" , post =parameter)		
 	
-	def read_achievements(self,parameter):
+	def read_achievements(self):
 		url = "%s%s/achievements?access_token=%s" % (GRAPH_URL, self.id ,self.specific_access_token) #app access token
 		return self.get_request(url)		
 
 	def delete_scores(self,parameter): # parameter = {"achievement","The unique URL to the achievement."}
 		return self.del_request( comp ="achievements" , param =parameter)		
 		
+
+class Banned(PyFacebook,GetRequest,DelRequest):
+	
+	def get_list(self):
+		url = "%s%s/banned?access_token=%s" % (GRAPH_URL, self.id ,self.specific_access_token) #app access token
+		return self.get_request(url)		
+	
+	def is_banned(self,parameter):
+		url = "%s%s/banned/%s?access_token=%s" % (GRAPH_URL, self.id ,parameter,self.specific_access_token) #app access token
+		return self.get_request(url)	
+	
+	def ban_user(self,parameter):
+		return self.post_request( comp ="banned" , get ={"uid":parameter},post="")	
+	
 class UploadPhoto(PyFacebook,PostFileRequest):
 	
 	def upload_photo(self,photos):
@@ -280,21 +304,34 @@ class Object(PyFacebook,GetRequest):
 		return self.get_request(url)
 
 
-
-
 """FACEBOOK GRAPH OBJECTS"""	
-class Album(Object,Connection,UploadPhoto,Comment,Like):	
-	
+class Album(Object,Connection,UploadPhoto,Comments,Likes):	
+	#http://developers.facebook.com/docs/reference/api/album/
 	CONN = ["photos","likes","comments","picture"]	
 	FIELDS = ["id","from","name","description","location","link","cover_photo",
 			"privacy","count","type","created_time","updated_time"]
 	
-class Application(Object,Connection,Account):	
-	
+class Application(Object,Connection,Accounts,Subscriptions,Translations,Scores,Achievements,Banned):	
+	#http://developers.facebook.com/docs/reference/api/application/
 	CONN = ["accounts","albums","feed","insights","links","picture","posts",
 			"reviews","staticresources","statuses","subscriptions","tagged","translations",
 			"scores","achievements"]	
 	FIELDS = ["id","name","description","category","subcategory","link"]
+	
+class Checkin(Object,Connection,Comments,Likes):	
+	#http://developers.facebook.com/docs/reference/api/checkin/
+	CONN = ["comments","likes"]
+	FIELDS = ["id","from","tags","place","application","created_time",
+			"likes","message","comments","type"] 
+	
+class Comment(Object,Connection,Likes):	
+	
+	CONN = ["likes"]
+	FIELDS = ["id","from","message","created_time","likes","user_likes","type"]
+	
+class Domain(Object):	
+	
+	FIELDS = ["id","name"]
 	
 class User(Object,Connection,Feed):
 	pass

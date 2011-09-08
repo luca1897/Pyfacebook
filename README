@@ -33,9 +33,9 @@ for more examples see test.py
 ===========================================================================
 Album ✔
 Application ✔
-Checkin 
-Comment 
-Domain 
+Checkin ✔
+Comment ✔
+Domain ✔
 Event 
 FriendList 
 Group
