@@ -72,3 +72,5 @@ print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(
 print "Add photos to an album"
 files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
 print pyfacebook.Album(album_id).upload_photo(files)
+#RSVP the user as 'attending' an Event
+print pyfacebook.Event("225986690757733").attending()

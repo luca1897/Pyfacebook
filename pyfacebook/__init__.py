@@ -233,6 +233,17 @@ class Banned(PyFacebook,GetRequest,DelRequest):
 	def ban_user(self,parameter):
 		return self.post_request( comp ="banned" , get ={"uid":parameter},post="")	
 	
+class Rsvp(PyFacebook,PostRequest):	
+	
+	def maybe(self):
+		return self.post_request( comp ="maybe" , post="")	
+		
+	def attending(self):
+		return self.post_request( comp ="attending" ,post="")	
+	
+	def declined(self):
+		return self.post_request( comp ="declined" ,post="")	
+	
 class UploadPhoto(PyFacebook,PostFileRequest):
 	
 	def upload_photo(self,photos):
@@ -325,13 +336,20 @@ class Checkin(Object,Connection,Comments,Likes):
 			"likes","message","comments","type"] 
 	
 class Comment(Object,Connection,Likes):	
-	
+	#http://developers.facebook.com/docs/reference/api/comment/
 	CONN = ["likes"]
 	FIELDS = ["id","from","message","created_time","likes","user_likes","type"]
 	
 class Domain(Object):	
-	
+	#http://developers.facebook.com/docs/reference/api/domain/
 	FIELDS = ["id","name"]
+	
+class Event(Object,Connection,Feed,Rsvp):	
+	#http://developers.facebook.com/docs/reference/api/event/
+	CONN = ["feed","noreply","maybe","invited","attending","declined","picture"]
+	FIELDS = ["id","owner","name","description","start_time","end_time","location","venue",
+			"privacy","updated_time"]
+	
 	
 class User(Object,Connection,Feed):
 	pass
