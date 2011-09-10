@@ -78,7 +78,7 @@ print pyfacebook.Event("225986690757733").attending()
 #Create a Friendlist
 list = pyfacebook.Friendlist("me").create("Name")
 #Add a user to a FriendList
-print pyfacebook.Friendlist(list["id"]).add_member("Friend ID")
+print pyfacebook.Friendlist(list["id"]).add_member("Friend ID") 
 #Get all of the users who are members of this list.
 print pyfacebook.Friendlist(list["id"]).connection("members")
 #Remove a user from a FriendList
