@@ -369,6 +369,31 @@ class Friendlist(Object,Connection,friendlist):
 	CONN = ["members"]
 	FIELDS = ["id","name","type"]
 	
+class Group(Object,Connection,Feed):	
+	#http://developers.facebook.com/docs/reference/api/group/
+	CONN = ["feed","members","picture","docs"]
+	FIELDS = ["id","version","icon","owner","name","description","link","privacy",
+			"updated_time"]	
+	
+class Insights(Object):	
+	#http://developers.facebook.com/docs/reference/api/insights/
+	FIELDS = ["id","name","period","values","description"]
+	
+class Link(Object,Connection,Comments):	
+	#http://developers.facebook.com/docs/reference/api/link/
+	CONN = ["comments","likes"]
+	FIELDS = ["id","from","link","name","comments","description","icon",
+			"picture","message","created_time","type"]
+	
+class Message(Object):
+	#http://developers.facebook.com/docs/reference/api/message/
+	FIELDS = ["id","created_time","from","to","message"]
+	
+class Note(Object,Connection,Comments,Likes):
+	#http://developers.facebook.com/docs/reference/api/note/
+	CONN = ["comments","likes"]
+	FIELDS = ["id","from","subject","message","comments","created_time",
+			"updated_time","icon"]
 class User(Object,Connection,Feed):
 	pass
 		
