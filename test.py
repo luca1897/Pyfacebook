@@ -13,7 +13,7 @@ permission = ["read_mailbox","user_photos","publish_stream","user_checkins","fri
 #init library
 pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
 
-#Post 4 link 
+#Post 4 links
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
@@ -74,3 +74,14 @@ files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
 print pyfacebook.Album(album_id).upload_photo(files)
 #RSVP the user as 'attending' an Event
 print pyfacebook.Event("225986690757733").attending()
+
+#Create a Friendlist
+list = pyfacebook.Friendlist("me").create("Name")
+#Add a user to a FriendList
+print pyfacebook.Friendlist(list["id"]).add_member("Friend ID")
+#Get all of the users who are members of this list.
+print pyfacebook.Friendlist(list["id"]).connection("members")
+#Remove a user from a FriendList
+print pyfacebook.Friendlist(list["id"]).remove_member("Friend ID")
+#Delete a Friendlist
+print pyfacebook.Friendlist(list["id"]).delete()

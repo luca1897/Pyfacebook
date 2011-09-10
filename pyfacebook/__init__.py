@@ -244,6 +244,20 @@ class Rsvp(PyFacebook,PostRequest):
 	def declined(self):
 		return self.post_request( comp ="declined" ,post="")	
 	
+class friendlist(PyFacebook,PostRequest,DelRequest):	
+	
+	def create(self,name):
+		return self.post_request( comp ="friendlists" , post={"name":name})
+	
+	def delete(self):
+		return self.del_request( comp ="")		
+	
+	def add_member(self,id):
+		return self.post_request( comp ="members/%s" % id , post="")
+	
+	def remove_member(self,id):
+		return self.del_request( comp ="members/%s" % id)	
+	
 class UploadPhoto(PyFacebook,PostFileRequest):
 	
 	def upload_photo(self,photos):
@@ -350,6 +364,10 @@ class Event(Object,Connection,Feed,Rsvp):
 	FIELDS = ["id","owner","name","description","start_time","end_time","location","venue",
 			"privacy","updated_time"]
 	
+class Friendlist(Object,Connection,friendlist):	
+	#http://developers.facebook.com/docs/reference/api/FriendList/
+	CONN = ["members"]
+	FIELDS = ["id","name","type"]
 	
 class User(Object,Connection,Feed):
 	pass
