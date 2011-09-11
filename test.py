@@ -97,7 +97,7 @@ print pyfacebook.Friendlist(list["id"]).delete_friendlist()
 print pyfacebook.Man_event("me").create_event(name="test",start_time=int(time.time()))
 
 #USERS_CAN_POST, USERS_CAN_POST_PHOTOS, USERS_CAN_TAG_PHOTOS, USERS_CAN_POST_VIDEOS
-print pyfacebook.Page(page_id).update_setting("USERS_CAN_POST",True)"""
+print pyfacebook.Page(page_id).update_setting("USERS_CAN_POST",True)
 
 #Post 4 links
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
