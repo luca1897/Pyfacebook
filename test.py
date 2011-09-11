@@ -13,7 +13,7 @@ permission = ["read_mailbox","user_photos","publish_stream","user_checkins","fri
 #init library
 pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
 print pyfacebook.get_generic_access_token()
-
+"""
 #Post 4 links
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
@@ -68,11 +68,12 @@ print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, a
 #Delete a test account for an application
 print "Delete a test account for an application"
 print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
-
+"""
 #Add photos to an album
 print "Add photos to an album"
-files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
-print pyfacebook.Album(album_id).upload_photo(files)
+files = [{"filename":"./util/image.jpg","param":{"message":"Uploaded with PyFbGraph!1"}}]
+print pyfacebook.Album(album_id).upload_files(files)
+"""
 #RSVP the user as 'attending' an Event
 print pyfacebook.Event("225986690757733").attending()
 
@@ -88,13 +89,16 @@ print pyfacebook.Friendlist(list["id"]).remove_member("Friend ID")
 print pyfacebook.Friendlist(list["id"]).delete_friendlist()
 
 #Create an event
-"""
-Parameter	 	Description	 			Type	 													Required
-name			Event name				string	 													yes
-start_time		Event start time	 	UNIX timestamp					 							yes
-end_time		Event end time	 		UNIX timestamp	 											no
-message			Event description		string	 													no
-location	 	Event location			string	 													no
-privacy_type	Event privacy setting	string containing 'OPEN' (default), 'CLOSED', or 'SECRET'	no
-"""
+
+#Parameter	 	Description	 			Type	 													Required
+#name			Event name				string	 													yes
+#start_time		Event start time	 	UNIX timestamp					 							yes
+#end_time		Event end time	 		UNIX timestamp	 											no
+#message			Event description		string	 													no
+#location	 	Event location			string	 													no
+#privacy_type	Event privacy setting	string containing 'OPEN' (default), 'CLOSED', or 'SECRET'	no
+
 print pyfacebook.Man_event("me").create_event(name="test",start_time=int(time.time()))
+
+#USERS_CAN_POST, USERS_CAN_POST_PHOTOS, USERS_CAN_TAG_PHOTOS, USERS_CAN_POST_VIDEOS
+print pyfacebook.Page(page_id).update_setting("USERS_CAN_POST", true)"""
