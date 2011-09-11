@@ -44,15 +44,15 @@ def init(**args):
 	if "access_token" in args:
 		set_generic_access_token(args["access_token"])
 	else:
-		if "id_app" in args:
-			id_app = args["id_app"]
+		if "app_id" in args:
+			app_id = args["app_id"]
 		else:
 			raise FbError("failed: no appID found")
 		if "permission" in args:
 			permission = args["permission"]
 		else:
 			permission = ""
-		set_generic_access_token(AccessToken(id_app,permission))
+		set_generic_access_token(AccessToken(app_id,permission))
 	
 def set_generic_access_token(access_token):
 	global generic_access_token
@@ -216,7 +216,7 @@ class Achievements(PyFacebook,PostRequest,DelRequest):
 		url = "%s%s/achievements?access_token=%s" % (GRAPH_URL, self.id ,self.specific_access_token) #app access token
 		return self.get_request(url)		
 
-	def delete_scores(self,parameter): # parameter = {"achievement","The unique URL to the achievement."}
+	def delete_achievements(self,parameter): # parameter = {"achievement","The unique URL to the achievement."}
 		return self.del_request( comp ="achievements" , param =parameter)		
 		
 
@@ -244,12 +244,13 @@ class Rsvp(PyFacebook,PostRequest):
 	def declined(self):
 		return self.post_request( comp ="declined" ,post="")	
 	
-class friendlist(PyFacebook,PostRequest,DelRequest):	
+
+class Man_friendlist(PyFacebook,PostRequest,DelRequest):	
 	
-	def create(self,name):
+	def create_friendlist(self,name):
 		return self.post_request( comp ="friendlists" , post={"name":name})
 	
-	def delete(self):
+	def delete_friendlist(self):
 		return self.del_request( comp ="")		
 	
 	def add_member(self,id):
@@ -257,6 +258,18 @@ class friendlist(PyFacebook,PostRequest,DelRequest):
 	
 	def remove_member(self,id):
 		return self.del_request( comp ="members/%s" % id)	
+			
+	
+class Man_event(PyFacebook,PostRequest):	
+	
+	def create_event(self,**args):
+		return self.post_request( comp ="events" , post=args)
+	
+
+class Man_note(PyFacebook,PostRequest):
+	
+	def create_note(self,subject,message):
+		return self.post_request( comp ="notes" , {"subject":subject,"message":message})
 	
 class UploadPhoto(PyFacebook,PostFileRequest):
 	
@@ -364,7 +377,7 @@ class Event(Object,Connection,Feed,Rsvp):
 	FIELDS = ["id","owner","name","description","start_time","end_time","location","venue",
 			"privacy","updated_time"]
 	
-class Friendlist(Object,Connection,friendlist):	
+class Friendlist(Object,Connection,Man_friendlist):	
 	#http://developers.facebook.com/docs/reference/api/FriendList/
 	CONN = ["members"]
 	FIELDS = ["id","name","type"]
@@ -394,6 +407,17 @@ class Note(Object,Connection,Comments,Likes):
 	CONN = ["comments","likes"]
 	FIELDS = ["id","from","subject","message","comments","created_time",
 			"updated_time","icon"]
+	
+class Page(Object,Connection,Man_event,Feed,Man_note,UploadPhoto):	
+	#http://developers.facebook.com/docs/reference/api/page/
+	CONN = ["feed","picture","settings","tagged","links","photos","groups",
+			"albums","statuses","videos","notes","posts","events","checkins",
+			"admins","blocked","tabs"]
+	FIELDS = ["id","name","link","category","likes","location","phone","checkins",
+			"access_token"]
+	
+	#TODO: settings, videos, tabs, admins ecc
+	
 class User(Object,Connection,Feed):
 	pass
 		
