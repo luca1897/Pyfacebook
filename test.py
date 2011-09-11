@@ -12,14 +12,9 @@ except ImportError:
 permission = ["read_mailbox","user_photos","publish_stream","user_checkins","friends_checkins","publish_checkins","rsvp_event","read_stream","read_friendlists","manage_friendlists","user_groups","friends_groups","offline_access","create_event"]
 
 #init library
-pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
+pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission,method="webkitgtk")
 print pyfacebook.get_generic_access_token()
 
-#Post 4 links
-print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
-print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
-print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
-print pyfacebook.Feed("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
 
 print pyfacebook.User("me").object()
 print pyfacebook.Object("me").object()
@@ -102,4 +97,10 @@ print pyfacebook.Friendlist(list["id"]).delete_friendlist()
 print pyfacebook.Man_event("me").create_event(name="test",start_time=int(time.time()))
 
 #USERS_CAN_POST, USERS_CAN_POST_PHOTOS, USERS_CAN_TAG_PHOTOS, USERS_CAN_POST_VIDEOS
-print pyfacebook.Page(page_id).update_setting("USERS_CAN_POST", true)
+print pyfacebook.Page(page_id).update_setting("USERS_CAN_POST",True)
+
+#Post 4 links
+print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
+print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
+print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
+print pyfacebook.Feed("me",access_token).create_post({"link":"http://www.google.it","message":"test"})

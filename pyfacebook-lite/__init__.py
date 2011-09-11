@@ -210,23 +210,47 @@ class Object(PyFacebook,GetRequest):
 		return self.get_request(url)
 
 		
-class AccessToken(FbError):
+""" ACCESS TOKEN """		
+class common_method():
+	
+	def load_finished(self):
+		url = self.get_url()
+		if url.find("https://www.facebook.com/connect/login_success.html#access_token=")>=0:
+			self.access_token = url[url.find("=")+1:url.find("&expires_in")]
+			self.destroy()				
+		
+	def __str__(self):
+		return self.access_token	
+		
+class webkitgtk_method(common_method):		
+	def webkitgtk_browser(self):
+		try:
+			import gtk 
+			import webkit 
+		except ImportError: 
+			raise self.raise_error("You need pywebkitgtk\nDownload: http://code.google.com/p/pywebkitgtk/")
+				
+		self.web = webkit.WebView() 
+		
+		
+		win = gtk.Window(gtk.WINDOW_TOPLEVEL) 
+		win.add(self.web) 
+		win.show_all() 
+		
+		self.web.open(self.OAUTH_URL) 
+		self.web.connect("load-finished", self.load_finished)
+		self.gtk.main()			
+		
+	def get_url(self):
+		return self.web.get_main_frame().get_uri()
+	
+	def destroy(self):
+		self.web.destroy()
+		self.gtk.main_quit()		
+				
 
-	def __init__(self,idapp,permission=None): 
-		self.access_token = ""
-		
-		if permission:
-			scope = "&scope=" + ",".join(permission)
-		self.REDIRECT_URL = "&redirect_uri=https://www.facebook.com/connect/login_success.html"
-		#OAUTH URL
-		self.OAUTH_URL = "https://www.facebook.com/dialog/oauth?client_id=" + idapp + self.REDIRECT_URL + scope + "&response_type=token"
-		
-		self.get_access_token()
-		if self.access_token=="":
-			raise self.raise_error("Access Token is not valid") 	
-			
-			
-	def get_access_token(self):
+class qt_method(common_method):
+	def qt_browser(self):
 		try: 
 			from PySide.QtCore import QUrl
 			from PySide.QtGui import QApplication
@@ -238,18 +262,38 @@ class AccessToken(FbError):
 		self.app = QApplication(sys.argv)
 		self.web = QWebView()
 		self.web.load(QUrl(self.OAUTH_URL))
-		self.web.loadFinished[bool].connect(self.loadfinished)
+		self.web.loadFinished[bool].connect(self.load_finished)
 		self.web.show()
 		self.app.exec_()
+		
+		
+	def get_url(self):	
+		return self.web.url().toString()
+	
+	def destroy(self):
+		self.web.close()
+		self.app.exit()
+							
 
+	
+class AccessToken(FbError,qt_method,webkitgtk_method):
 
-	def loadfinished(self):
-		url = self.web.url().toString()
-		if url.find("https://www.facebook.com/connect/login_success.html#access_token=")>=0:
-			self.access_token = url[url.find("=")+1:url.find("&expires_in")]
-			self.web.close()
-			self.app.exit()
-			
+	def __init__(self,app_id,permission=None,method="qt"): 
+		self.access_token = ""
+		if permission:
+			scope = "&scope=" + ",".join(permission)
+		
+		
+		REDIRECT_URL = "&redirect_uri=https://www.facebook.com/connect/login_success.html"
+		#OAUTH URL
+		self.OAUTH_URL = "https://www.facebook.com/dialog/oauth?client_id=" + app_id + REDIRECT_URL + scope + "&response_type=token" 	
+		if method=="webkitgtk":
+			self.webkitgtk_browser()	
+		elif method=="qt":
+			self.qt_browser()
+		else:
+			raise FbError("unknown method")
+		
 			
 	def __str__(self):
 		return self.access_token	
