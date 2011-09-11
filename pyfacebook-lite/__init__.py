@@ -152,26 +152,29 @@ class DelRequest(Request):
 		return self.request(request)
 
 	
-class UploadPhoto(PyFacebook,PostFileRequest):
+class UploadFiles(PyFacebook,PostFileRequest):
 	
-	def upload_photo(self,photos):
+	def upload_files(self,args):
 		import mimetypes
 		
 		ret = []
-		for f in photos:
-			body = []
-			mimetype = mimetypes.guess_type(f["filename"])[0] or 'application/octet-stream'
-			
-			filehandle = open(f["filename"])
 		
-			#Photo description
+		for a in args:
+			body = []
+			mimetype = mimetypes.guess_type(a["filename"])[0] or 'application/octet-stream' 
+			
+			filehandle = open(a["filename"])
+			
+			#File description
+			for p in a["param"]:
+				body.append('--PyFbGraph')
+				body.append('Content-Disposition: form-data; name="%s"' % (p))
+				body.append('')
+				body.append(a["param"][p])	
+							
+			#File Content
 			body.append('--PyFbGraph')
-			body.append('Content-Disposition: form-data; name="message"')
-			body.append('')
-			body.append(f["message"])
-			#Photo content
-			body.append('--PyFbGraph')
-			body.append('Content-Disposition: file; name="source"; filename="%s"' % (f["filename"]))
+			body.append('Content-Disposition: file; name="source"; filename="%s"' % (a["filename"]))
 			body.append('Content-Type: %s' % mimetype)
 			body.append('')
 			body.append(filehandle.read())
@@ -179,11 +182,11 @@ class UploadPhoto(PyFacebook,PostFileRequest):
 			filehandle.close()
 			
 			body.append('--PyFbGraph--')
-			body.append('')
-
+			body.append('')	
+			
 			ret.append(self.post_file_request(body='\r\n'.join(body)))
 		
-		return ret	
+		return ret		
 	
 class Connection(PyFacebook,GetRequest):
 	
