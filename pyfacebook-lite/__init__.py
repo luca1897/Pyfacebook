@@ -78,7 +78,6 @@ def set_generic_access_token(access_token="",args=None):
 	if access_token:
 		generic_access_token = access_token
 	else:
-		print args["method"]
 		generic_access_token = args["method"](args["app_id"],args["permission"])
 			
 def get_generic_access_token():

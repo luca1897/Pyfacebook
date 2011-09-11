@@ -80,7 +80,6 @@ def set_generic_access_token(access_token="",args=None):
 	if access_token:
 		generic_access_token = access_token
 	else:
-		print args["method"]
 		generic_access_token = args["method"](args["app_id"],args["permission"])
 			
 def get_generic_access_token():
@@ -359,6 +358,11 @@ class Blocked(PyFacebook,GetRequest):
 	def unblock_user(self,u_id):
 		"""unblock a blocked user"""
 		return self.del_request( comp ="blocked/%s" % u_id)
+		
+class Tags(PyFacebook,PostRequest):	
+	
+	def tag_user(self,id,args=""):	
+		return self.post_request( comp ="tags/%s" % (id) , post =args)
 				
 class UploadFiles(PyFacebook,PostFileRequest):
 	
@@ -429,7 +433,6 @@ class Object(PyFacebook,GetRequest):
 				return "Unknown(s) field(s): %s" % (",".join(d))
 			get.append("fields=%s" % (",".join(args["fields"])))
 			
-		print generic_access_token	
 		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token))
 		url = "%s%s/?%s" % (GRAPH_URL,self.id,"&".join(get))
 		
@@ -509,6 +512,13 @@ class Page(Object,Connection,Man_event,Feed,Man_note,UploadFiles,Setting,Tabs,Ad
 			"admins","blocked","tabs"]
 	FIELDS = ["id","name","link","category","likes","location","phone","checkins",
 			"access_token"]
+	
+	
+class Photo(Object,Connection,Comments,Likes,Tags):	
+	#https://developers.facebook.com/docs/reference/api/photo/
+	CONN = ["comments","likes","picture","tags"]
+	FIELDS = ["id","from","tags","name","icon","picture","source","height","width",
+			"images","link","created_time","updated_time","position"]
 	
 	
 class User(Object,Connection,Feed):

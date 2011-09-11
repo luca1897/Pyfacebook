@@ -8,6 +8,7 @@ except ImportError:
 	app_id = ""
 	app_secret = ""
 	page_id = ""
+	photo_id = ""
 
 permission = ["read_mailbox","user_photos","publish_stream","user_checkins","friends_checkins","publish_checkins","rsvp_event","read_stream","read_friendlists","manage_friendlists","user_groups","friends_groups","offline_access","create_event"]
 
@@ -104,3 +105,6 @@ print pyfacebook.User("me").create_post({"link":"http://www.google.it","message"
 print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
 print pyfacebook.Feed("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
+
+#tag an user on the photo
+print pyfacebook.Photo(photo_id).tag_user(me_id,{"x":"70","y":"50"})
