@@ -42,8 +42,8 @@ def init(**args):
 	if "access_token" in args:
 		set_generic_access_token(args["access_token"])
 	else:
-		if "id_app" in args:
-			id_app = args["id_app"]
+		if "app_id" in args:
+			id_app = args["app_id"]
 		else:
 			raise FbError("failed: no appID found")
 		if "permission" in args:
