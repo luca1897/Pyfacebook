@@ -27,6 +27,41 @@ client_access_token = None
 def diff_list(a,b):	
 	return list(set(b) - set(a))
 
+class PyFacebook(object):
+	def __init__(self,id,specific_access_token=None):
+		self.set_specific_access_token(specific_access_token)
+		self.id=id
+	
+	def set_specific_access_token(self,access_token):
+		self.specific_access_token = access_token 
+			
+	def get_specific_access_token(self):
+		return str(self.specific_access_token)	
+	
+	def set_id(self,id):
+		self.id = id
+
+
+def init(**args):
+	if "access_token" in args and args["access_token"]:
+		set_generic_access_token(args["access_token"])
+	else:
+		if "app_id" in args:
+			app_id = args["app_id"]
+		else:
+			raise FbError("failed: no appID found")
+		if "permission" in args:
+			permission = args["permission"]
+		else:
+			permission = ""
+			
+		if "method" in args:
+			method = args["method"]
+		else:
+			method = qt_method
+			
+		set_generic_access_token(args={"app_id":app_id,"permission":permission,"method":method})
+
 def set_client_access_token(arg):
 	global client_access_token
 	client_access_token = arg
@@ -40,46 +75,19 @@ def get_client_access_token(client_id=None,client_secret=None):
 	return client_access_token
 
 	
-def init(**args):
-	if "access_token" in args:
-		set_generic_access_token(args["access_token"])
-	else:
-		if "app_id" in args:
-			app_id = args["app_id"]
-		else:
-			raise FbError("failed: no appID found")
-		if "permission" in args:
-			permission = args["permission"]
-		else:
-			permission = ""
-		set_generic_access_token(AccessToken(app_id,permission))
-	
-def set_generic_access_token(access_token):
+def set_generic_access_token(access_token="",args=None):
 	global generic_access_token
-	generic_access_token = access_token
+	if access_token:
+		generic_access_token = access_token
+	else:
+		print args["method"]
+		generic_access_token = args["method"](args["app_id"],args["permission"])
 			
 def get_generic_access_token():
 	return str(generic_access_token)	
 	
-class PyFacebook(object):
-	def __init__(self,id,specific_access_token=None):
-		self.set_specific_access_token(specific_access_token)
-		self.id=id
 	
-	def set_specific_access_token(self,access_token):
-		self.specific_access_token = access_token 
-			
-	def get_specific_access_token(self):
-		return str(self.specific_access_token)	
-	
-	def set_id(self,id):
-		self.id = id	
-			
-class FbError(Exception):
-	
-	def raise_error(self, message):
-		Exception.__init__(self, message)
-	
+"""REQUEST"""	
 	
 class Request(object):
 				
@@ -152,6 +160,9 @@ class DelRequest(Request):
 		request = urllib2.Request(url)
 		request.get_method = lambda: 'DELETE'
 		return self.request(request)
+
+
+"""METHOD"""	
 
 class Feed(PyFacebook,PostRequest):
 	"""create a link, post or status message"""
@@ -508,7 +519,16 @@ class User(Object,Connection,Feed):
 		
 """ ACCESS TOKEN """		
 class common_method():
-	
+	access_token = ""
+
+	REDIRECT_URL = "&redirect_uri=https://www.facebook.com/connect/login_success.html"
+
+	def __init__(self,app_id,permission):
+		if permission:
+			scope = "&scope=" + ",".join(permission)
+		self.OAUTH_URL = "https://www.facebook.com/dialog/oauth?client_id=" + app_id + self.REDIRECT_URL + scope + "&response_type=token"
+		self.create_browser()
+		
 	def load_finished(self):
 		url = self.get_url()
 		if url.find("https://www.facebook.com/connect/login_success.html#access_token=")>=0:
@@ -519,7 +539,7 @@ class common_method():
 		return self.access_token	
 		
 class webkitgtk_method(common_method):		
-	def webkitgtk_browser(self):
+	def create_browser(self):
 		try:
 			import gtk 
 			import webkit 
@@ -546,7 +566,7 @@ class webkitgtk_method(common_method):
 				
 
 class qt_method(common_method):
-	def qt_browser(self):
+	def create_browser(self):
 		try: 
 			from PySide.QtCore import QUrl
 			from PySide.QtGui import QApplication
@@ -569,27 +589,9 @@ class qt_method(common_method):
 	def destroy(self):
 		self.web.close()
 		self.app.exit()
-							
-
+		
+"""EXCEPTION"""		
+class FbError(Exception):
 	
-class AccessToken(FbError,qt_method,webkitgtk_method):
-
-	def __init__(self,app_id,permission=None,method="qt"): 
-		self.access_token = ""
-		if permission:
-			scope = "&scope=" + ",".join(permission)
-		
-		
-		REDIRECT_URL = "&redirect_uri=https://www.facebook.com/connect/login_success.html"
-		#OAUTH URL
-		self.OAUTH_URL = "https://www.facebook.com/dialog/oauth?client_id=" + app_id + REDIRECT_URL + scope + "&response_type=token" 	
-		if method=="webkitgtk":
-			self.webkitgtk_browser()	
-		elif method=="qt":
-			self.qt_browser()
-		else:
-			raise FbError("unknown method")
-		
-			
-	def __str__(self):
-		return self.access_token	
+	def raise_error(self, message):
+		Exception.__init__(self, message)		
