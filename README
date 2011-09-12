@@ -44,14 +44,14 @@ Link ✔
 Message ✔
 Note ✔
 Page ✔
-Photo
-Post
-Review
-Status message
-Subscription
-Thread
-User ✓
-Video
+Photo ✔
+Post ✔
+Review ✔
+Status message ✔
+Subscription ✔
+Thread ✔
+User ✔
+Video ✔
 
 for more info see: https://developers.facebook.com/docs/reference/api/
 
