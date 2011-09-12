@@ -10,12 +10,11 @@ except ImportError:
 	page_id = ""
 	photo_id = ""
 
-permission = ["read_mailbox","user_photos","publish_stream","user_checkins","friends_checkins","publish_checkins","rsvp_event","read_stream","read_friendlists","manage_friendlists","user_groups","friends_groups","offline_access","create_event"]
+permission = ["publish_actions","user_likes","read_mailbox","user_photos","publish_stream","user_checkins","friends_checkins","publish_checkins","rsvp_event","read_stream","read_friendlists","manage_friendlists","user_groups","friends_groups","offline_access","create_event"]
 
 #init library
 pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission) 
 print pyfacebook.get_generic_access_token()
-
 
 print pyfacebook.User("me").object()
 print pyfacebook.Object("me").object()
@@ -53,26 +52,12 @@ print pyfacebook.Application("2439131959").connection("albums",limit=25,until=12
 print pyfacebook.GetRequest().get_request("https://graph.facebook.com/2439131959/albums?access_token=%s&limit=25&until=1247270845" % (access_token))
 
 
-#Create a test account for an application
-print "Create a test account for an application"
-test_user = pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).create_account(parameter={"name":"lolasd","installed":True})
-print test_user
 
-#Ban a user
-print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).ban_user(test_user["id"])
-#Get  a list of banned users
-print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).get_list()
-#Delete a test account for an application
-print "Delete a test account for an application"
-print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
 
 #Add photos to an album
 print "Add photos to an album"
 files = [{"filename":"./util/image.jpg","param":{"message":"Uploaded with PyFbGraph!1"}}]
 print pyfacebook.Album(album_id).upload_files(files)
-
-#RSVP the user as 'attending' an Event
-print pyfacebook.Event("225986690757733").attending()
 
 #Create a Friendlist
 list = pyfacebook.Friendlist("me").create_friendlist("Name")
@@ -108,3 +93,36 @@ print pyfacebook.Feed("me",access_token).create_post({"link":"http://www.google.
 
 #tag an user on the photo
 print pyfacebook.Photo(photo_id).tag_user(me_id,{"x":"70","y":"50"})
+
+comment_id = pyfacebook.Photo(photo_id).comment("test")["id"]
+print pyfacebook.Photo(comment_id).del_comment()
+print pyfacebook.User("me").connection("groups")
+
+
+print pyfacebook.User(me_id,pyfacebook.get_client_access_token(app_id, app_secret)).post_score("30")
+
+print pyfacebook.User(me_id).is_liked("19292868552")
+
+
+#Create a test account for an application
+print "Create a test account for an application"
+test_user = pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).create_account(name = "lolasd",installed=True)
+print test_user
+
+#Ban a user
+print "Ban a user"
+print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).ban_user(test_user["id"])
+#Get  a list of banned users
+print "a list of banned users"
+print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).get_banned_list()
+
+#un-ban a user account
+print "un-ban a user account"
+print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, app_secret)).unban_user(test_user["id"])
+
+#Delete a test account for an application
+print "Delete a test account for an application"
+print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
+
+#RSVP the user as 'attending' an Event
+print pyfacebook.Event("225986690757733").maybe()
