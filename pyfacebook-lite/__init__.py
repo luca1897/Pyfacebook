@@ -26,16 +26,55 @@ client_access_token = None
 
 
 class PyFacebook(object):
-	def __init__(self,id,specific_access_token=None):
+	def __init__(self,id=None,specific_access_token=None):
 		self.set_specific_access_token(specific_access_token)
 		self.id=id
+
+	def Request(self,get={},post=None,delete=False,**args):
+
+		if post:
+			post = urllib.urlencode(post)
+			
+		get["access_token"] = self.specific_access_token if self.specific_access_token else get_generic_access_token()
+		
+		get = urllib.urlencode(get)
+			
+		url = "%s%s/%s?%s" % (GRAPH_URL, self.id, args["method"], get)
+		print url
+		req = urllib2.Request(url)
+		
+		if delete:
+			req.get_method = lambda: 'DELETE'	
+		elif "body" in args:		
+			req.add_header('Content-type', 'multipart/form-data; boundary=%s'% ('PyFbGraph'))
+			req.add_header('Content-length', len(args["body"]))
+			req.add_data(args["body"])
+			
+					
+		try:
+			res = urllib2.urlopen(req, post).read()
+		except urllib2.HTTPError, e:
+			res = e.read()	 
+		
+		try:
+			data = simplejson.loads(res)
+			if type(data) == dict:
+				if data.get("error"):
+					raise FbError(data["error"]["message"])	 
+				else:
+					return data
+			else:
+				return res
+		except ValueError:
+			return res
+	
 	
 	def set_specific_access_token(self,access_token):
 		self.specific_access_token = access_token 
-			
+
 	def get_specific_access_token(self):
 		return str(self.specific_access_token)	
-	
+
 	def set_id(self,id):
 		self.id = id
 
@@ -84,82 +123,11 @@ def get_generic_access_token():
 	return str(generic_access_token)	
 	
 	
-"""REQUEST"""	
-class Request(object):
-				
-	def request(self,request,post=None):
-		if post:
-			post = urllib.urlencode(post)
 
-		res = urllib2.urlopen(request,post).read()
-		try:
-			data = simplejson.loads(res)
-			if type(data) == dict:
-				if data.get("error"):
-					raise FbError(data["error"]["message"]) 	
-				else:
-					return data
-			else:
-				return res
-		except ValueError:
-			return res
-
-
-class PostFileRequest(Request):
-	
-	def post_file_request(self,**args):
-		url = "%s%s/photos/?access_token=%s" % (GRAPH_URL,self.id,self.specific_access_token if self.specific_access_token else generic_access_token)
-		
-		request = urllib2.Request(url)
-		request.add_header('Content-type', 'multipart/form-data; boundary=%s'% ('PyFbGraph'))
-		request.add_header('Content-length', len(args["body"]))
-		request.add_data(args["body"])		
-		return self.request(request)
-
-
-class PostRequest(Request):	
-	
-	def post_request(self,**args):
-		
-		get = []
-		if "get" in args:
-			for i in args["get"]:
-				get.append("%s=%s" % (i,args["get"][i]))
-				
-		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token)) 		
-			
-		
-		url = "%s%s/%s?%s" % (GRAPH_URL, self.id, args["comp"], "&".join(get))
-		request = urllib2.Request(url)
-		return self.request(request,args["post"])
-	
-	
-class GetRequest(Request):	
-	
-	def get_request(self,url):
-		request = urllib2.Request(url)
-		return self.request(request)	
-
-
-class DelRequest(Request):	
-	
-	def del_request(self,**args):
-		
-		get = []
-		if "param" in args:
-			for p in args["param"]:
-				get.append("%s=%s" % (p,args["param"][p]))		
-		
-		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token)) 
-		
-		url = "%s%s/%s?%s" % (GRAPH_URL, self.id, args["comp"],"&".join(get))
-		request = urllib2.Request(url)
-		request.get_method = lambda: 'DELETE'
-		return self.request(request)
 
 """ METHOD """	
 	
-class UploadFiles(PyFacebook,PostFileRequest):
+class UploadFiles():
 	
 	def upload_files(self,args):
 		import mimetypes
@@ -191,35 +159,38 @@ class UploadFiles(PyFacebook,PostFileRequest):
 			body.append('--PyFbGraph--')
 			body.append('')	
 			
-			ret.append(self.post_file_request(body='\r\n'.join(body)))
+			ret.append(self.Request(method="photos",body='\r\n'.join(body)))
 		
-		return ret		
-	
+		return ret	
 
 	
-class Connection(PyFacebook,GetRequest):
+class Connection():
+	
+	CONN = []
 	
 	def connection(self,connection=[],**args):
-		get = []	
-			
-		for a in args.keys():
-			get.append("%s=%s" % (a,args[a]))
-		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token))
-		url = "%s%s/%s?%s" % (GRAPH_URL, self.id ,connection ,"&".join(get))
-		return self.get_request(url)
+		
+		if connection in self.CONN or not self.CONN:
+			return self.Request(method=connection,get=args)
+		else:
+			return "Unknown connection: %s " % (connection) 
 	
 	
-class Object(PyFacebook,GetRequest):
+class Object():
+	
+	FIELDS = []
 	
 	def object(self,**args):	
+		
+		get = []
 			
 		if "fields" in args:
-			get.append("fields=%s" % (",".join(args["fields"])))
-			
-		get.append("access_token=%s" % (self.specific_access_token if self.specific_access_token else generic_access_token))
-		url = "%s%s/?%s" % (GRAPH_URL,self.id,"&".join(get))
-		
-		return self.get_request(url)
+			d = diff_list(self.FIELDS,args["fields"])
+			if d:
+				return "Unknown(s) field(s): %s" % (",".join(d))
+			get.append({"fields":",".join(args["fields"])})
+					
+		return self.Request(method="",get=args)
 
 		
 """ ACCESS TOKEN """		
