@@ -17,7 +17,6 @@ pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission)
 print pyfacebook.get_generic_access_token()
 
 print pyfacebook.User("me").object()
-print pyfacebook.Object("me").object()
 
 #print the profile that created this album and the title of the album 
 print "print the profile that created this album and the title of the album "
@@ -29,7 +28,7 @@ print pyfacebook.Album(album_id,access_token).connection("photos")
 #The album's cover photo
 print "The album's cover photo"
 f = open("test.jpg","w")
-f.write(pyfacebook.Connection(album_id,access_token).connection("picture"))
+f.write(pyfacebook.Album(album_id,access_token).connection("picture"))
 f.close()
 
 
@@ -39,7 +38,7 @@ ret = pyfacebook.Album(album_id).comment('test')
 print ret
 #like a comment
 print "like a comment"
-print pyfacebook.Likes(ret['id']).like()
+print pyfacebook.Album(ret['id']).like()
 #unlike an Album
 print "unlike an Album"
 print pyfacebook.Album(album_id).unlike()
@@ -49,26 +48,25 @@ print "The photo albums this page has created"
 print pyfacebook.Application("2439131959").connection("albums")
 print pyfacebook.Application("2439131959").connection("albums",limit=25,until=1247270845)
 # =
-print pyfacebook.GetRequest().get_request("https://graph.facebook.com/2439131959/albums?access_token=%s&limit=25&until=1247270845" % (access_token))
-
-
-
 
 #Add photos to an album
 print "Add photos to an album"
 files = [{"filename":"./util/image.jpg","param":{"message":"Uploaded with PyFbGraph!1"}}]
 print pyfacebook.Album(album_id).upload_files(files)
 
+
 #Create a Friendlist
 list = pyfacebook.Friendlist("me").create_friendlist("Name")
 #Add a user to a FriendList
-print pyfacebook.Friendlist(list["id"]).add_member("Friend ID") 
+print pyfacebook.Friendlist(list["id"]).add_member(friend_id) 
 #Get all of the users who are members of this list.
 print pyfacebook.Friendlist(list["id"]).connection("members")
 #Remove a user from a FriendList
-print pyfacebook.Friendlist(list["id"]).remove_member("Friend ID")
+print pyfacebook.Friendlist(list["id"]).remove_member(friend_id)
 #Delete a Friendlist
 print pyfacebook.Friendlist(list["id"]).delete_friendlist()
+
+
 
 #Create an event
 
@@ -83,13 +81,11 @@ print pyfacebook.Friendlist(list["id"]).delete_friendlist()
 print pyfacebook.Man_event("me").create_event(name="test",start_time=int(time.time()))
 
 #USERS_CAN_POST, USERS_CAN_POST_PHOTOS, USERS_CAN_TAG_PHOTOS, USERS_CAN_POST_VIDEOS
-print pyfacebook.Page(page_id).update_setting("USERS_CAN_POST",True)
+print pyfacebook.Page(page_id,page_access_token).update_setting("USERS_CAN_POST",True)
 
-#Post 4 links
+#Post a link
 print pyfacebook.User("me").create_post({"link":"http://www.google.it","message":"test"})
-print pyfacebook.User("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
-print pyfacebook.Feed("me").create_post({"link":"http://www.google.it","message":"test"})
-print pyfacebook.Feed("me",access_token).create_post({"link":"http://www.google.it","message":"test"})
+
 
 #tag an user on the photo
 print pyfacebook.Photo(photo_id).tag_user(me_id,{"x":"70","y":"50"})
@@ -102,7 +98,6 @@ print pyfacebook.User("me").connection("groups")
 print pyfacebook.User(me_id,pyfacebook.get_client_access_token(app_id, app_secret)).post_score("30")
 
 print pyfacebook.User(me_id).is_liked("19292868552")
-
 
 #Create a test account for an application
 print "Create a test account for an application"
@@ -124,5 +119,10 @@ print pyfacebook.Application(app_id,pyfacebook.get_client_access_token(app_id, a
 print "Delete a test account for an application"
 print pyfacebook.Application(test_user["id"],pyfacebook.get_client_access_token(app_id, app_secret)).delete_account()
 
-#RSVP the user as 'attending' an Event
+#RSVP the user as 'maybe' an Event
 print pyfacebook.Event("225986690757733").maybe()
+
+
+
+
+
