@@ -19,12 +19,14 @@ album_id = "album id"
 app_id = "app id"
 
 
-permission = ["publish_stream"]
+pyfacebook.init(access_token=access_token,app_id=app_id,permission=permission) 
+print pyfacebook.get_generic_access_token()
 
-pyfacebook.init(app_id=app_id,permission=permission)
+print pyfacebook.User("me").object()
 
-files = [{"filename":"./util/image.jpg","message":"Uploaded with Pyfacebook!1"}]
-print pyfacebook.Album(album_id).upload_photo(files)
+#print the profile that created this album and the title of the album 
+print "print the profile that created this album and the title of the album "
+print pyfacebook.Album(album_id).object(fields=["from","name"])
 
 for more examples see test.py
 
