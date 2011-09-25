@@ -2,7 +2,7 @@
 Pyfacebook
 =========================================
 1. Introduction
-PyFbGraph is a Python client library for the Facebook Graph API.
+Pyfacebook is a Python client library for the Facebook Graph API.
 
 
 ===========================================================================
@@ -23,7 +23,7 @@ permission = ["publish_stream"]
 
 pyfacebook.init(app_id=app_id,permission=permission)
 
-files = [{"filename":"./util/image.jpg","message":"Uploaded with PyFbGraph!1"}]
+files = [{"filename":"./util/image.jpg","message":"Uploaded with Pyfacebook!1"}]
 print pyfacebook.Album(album_id).upload_photo(files)
 
 for more examples see test.py
